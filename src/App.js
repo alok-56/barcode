@@ -1,79 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import { BarcodeDetector } from 'barcode-detector';
 
 const App = () => {
-  const [stream, setStream] = useState(null);
-  const [devices, setDevices] = useState([]);
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [back, setBack] = useState([]);
+  const [detectedBarcodes, setDetectedBarcodes] = useState([]);
 
   useEffect(() => {
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((deviceInfos) => {
-        const videoDevices = deviceInfos.filter(
-          (device) => device.kind === "videoinput"
-        );
-        setDevices(videoDevices);
-        if (videoDevices.length > 0) {
-          setSelectedDevice(videoDevices[0].deviceId);
-        }
-        const backCameras = videoDevices.filter(
-          (device) =>
-            device.label.toLowerCase().includes("back") ||
-            device.label.toLowerCase().includes("rear")
-        );
-        setBack(backCameras);
-      })
-      .catch((err) => console.error("Error enumerating devices:", err));
+    const detectBarcodes = async () => {
+      try {
+        const detector = new BarcodeDetector();
+        const barcodes = await detector.detect(document.querySelector('video'));
+        setDetectedBarcodes(barcodes);
+      } catch (error) {
+        console.error('Error detecting barcodes:', error);
+      }
+    };
+
+    detectBarcodes();
+
+    // Cleanup function
+    return () => {
+      setDetectedBarcodes([]);
+    };
   }, []);
-
-  useEffect(() => {
-    if (selectedDevice) {
-      const constraints = { video: { deviceId: selectedDevice } };
-      navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then((stream) => {
-          setStream(stream);
-        })
-        .catch((err) => console.error("Error accessing camera:", err));
-    }
-  }, [selectedDevice]);
-
-  const switchCamera = (deviceId) => {
-    setSelectedDevice(deviceId);
-  };
 
   return (
     <div>
-      <div>
-        <p>Number of video devices available: {devices.length}</p>
-        <select
-          value={selectedDevice}
-          onChange={(e) => switchCamera(e.target.value)}
-        >
-          {devices.map((device) => (
-            <option key={device.deviceId} value={device.deviceId}>
-              {device.label || `Camera ${device.deviceId}`}
-            </option>
-          ))}
-        </select>
-      </div>
-      {back && back.map((item) => <p>{item.label}</p>)}
-      {stream && (
-        <video
-          autoPlay
-          playsInline
-          muted
-          style={{ width: "100%", height: "auto" }}
-          id="camera-stream"
-          ref={(video) => {
-            if (video) {
-              video.srcObject = stream;
-            }
-          }}
-        />
-      )}
-      {!stream && <p>No camera stream available</p>}
+      <h2>Detected Barcodes</h2>
+      <ul>
+        {detectedBarcodes.map((barcode, index) => (
+          <li key={index}>{barcode.rawValue}</li>
+        ))}
+      </ul>
+      <video height={200} width={200} autoPlay playsInline muted></video>
     </div>
   );
 };
