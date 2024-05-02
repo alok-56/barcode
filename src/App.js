@@ -1,37 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { BarcodeDetector } from 'barcode-detector';
+import React, { useState } from "react";
+import { BarcodeScanner, useTorch } from "react-barcode-scanner";
 
 const App = () => {
-  const [detectedBarcodes, setDetectedBarcodes] = useState([]);
+  const [isSupportTorch, isOpen, onTorchSwitch] = useTorch();
+  const [selectedCamera, setSelectedCamera] = useState("environment");
 
-  useEffect(() => {
-    const detectBarcodes = async () => {
-      try {
-        const detector = new BarcodeDetector();
-        const barcodes = await detector.detect(document.querySelector('video'));
-        setDetectedBarcodes(barcodes);
-      } catch (error) {
-        console.error('Error detecting barcodes:', error);
-      }
-    };
-
-    detectBarcodes();
-
-    // Cleanup function
-    return () => {
-      setDetectedBarcodes([]);
-    };
-  }, []);
+  const handleCameraChange = (camera) => {
+    setSelectedCamera(camera);
+  };
 
   return (
-    <div>
-      <h2>Detected Barcodes</h2>
-      <ul>
-        {detectedBarcodes.map((barcode, index) => (
-          <li key={index}>{barcode.rawValue}</li>
-        ))}
-      </ul>
-      <video height={200} width={200} autoPlay playsInline muted></video>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ width: "100%", height: "360px", position: "relative" }}>
+        <BarcodeScanner facingMode={selectedCamera} />
+        {isSupportTorch ? (
+          <button style={{ position: "absolute", top: "10px", left: "10px" }} onClick={onTorchSwitch}>
+            Switch Torch
+          </button>
+        ) : null}
+      </div>
+      <div style={{ marginTop: "20px" }}>
+        <label>Select Camera:</label>
+        <select value={selectedCamera} onChange={(e) => handleCameraChange(e.target.value)}>
+          <option value="environment">Back Camera</option>
+          <option value="user">Front Camera</option>
+        </select>
+      </div>
     </div>
   );
 };
