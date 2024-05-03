@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@yudiel/react-qr-scanner": "^2.0.0-beta.3",
     "barcode-detector": "^2.2.5",
     "dynamsoft-javascript-barcode": "^9.6.42",
     "jsqr": "^1.4.0",
