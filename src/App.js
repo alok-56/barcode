@@ -1,16 +1,40 @@
-import { Scanner } from "@yudiel/react-qr-scanner";
-import { useState } from "react";
+import React, { useState } from "react";
+import { BarcodeScanner, useTorch } from "react-barcode-scanner";
 
 const App = () => {
-  const [data, setData] = useState("");
+  const [isSupportTorch, isOpen, onTorchSwitch] = useTorch();
+  const [selectedCamera, setSelectedCamera] = useState("environment");
+
+  const handleCameraChange = (camera) => {
+    setSelectedCamera(camera);
+  };
+
   return (
-    <>
-      <Scanner
-        onResult={(text, result) => setData(result)}
-        onError={(error) => console.log(error?.message)}
-      />
-      <h1>{data}</h1>
-    </>
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      <div style={{ width: "100%", height: "360px", position: "relative" }}>
+        <BarcodeScanner facingMode={selectedCamera} />
+        {isSupportTorch ? (
+          <button
+            style={{ position: "absolute", top: "10px", left: "10px" }}
+            onClick={onTorchSwitch}
+          >
+            Switch Torch
+          </button>
+        ) : null}
+      </div>
+      <div style={{ marginTop: "20px" }}>
+        <label>Select Camera:</label>
+        <select
+          value={selectedCamera}
+          onChange={(e) => handleCameraChange(e.target.value)}
+        >
+          <option value="environment">Back Camera</option>
+          <option value="user">Front Camera</option>
+        </select>
+      </div>
+    </div>
   );
 };
 
